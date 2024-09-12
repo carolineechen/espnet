@@ -36,6 +36,9 @@ class TransLoss(torch.nn.Module):
                     )
             else:
                 raise ValueError("warp-rnnt is not supported in CPU mode")
+        elif trans_type == "torchaudio":
+            from torchaudio.prototype.rnnt_loss import RNNTLoss as PytorchLoss
+            self.trans_loss = PytorchLoss(blank=blank_id)
 
         self.trans_type = trans_type
         self.blank_id = blank_id
@@ -73,6 +76,9 @@ class TransLoss(torch.nn.Module):
             )
         else:
             loss = self.trans_loss(pred_pad, target, pred_len, target_len)
+            if self.trans_type == "torchaudio":
+                loss = loss.mean()
+
         loss = loss.to(dtype=dtype)
 
         return loss
